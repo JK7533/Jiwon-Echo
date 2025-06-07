@@ -2,93 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>LV Diastolic Function Grader</title>
+  <title>ASE 2016 Diastolic Function Grader</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; background: #f7fafd; max-width: 650px;}
     h2 { color: #024; }
     label { font-weight: bold; }
     input { margin: 0.3em 0 1em 0.5em; }
-    select { margin: 0.3em 0 1em 0.5em; }
     .result { font-weight: bold; font-size: 1.15em; margin: 1em 0; color: #155; }
     ul,li { line-height: 1.5;}
   </style>
 </head>
 <body>
-  <h2>LV Diastolic Function Grading Tool</h2>
+  <h2>ASE 2016 Diastolic Function Grading Tool (Normal LVEF)</h2>
   <form id="dfForm">
-    <label>Mitral E/A ratio:</label>
+    <label>E/A ratio:</label>
     <input type="number" id="ea" step="0.01"><br>
+    <label>E-wave velocity (cm/s):</label>
+    <input type="number" id="e" step="0.1"><br>
     <label>Average E/e′:</label>
     <input type="number" id="ee" step="0.1"><br>
     <label>LA volume index (mL/m²):</label>
     <input type="number" id="la" step="0.1"><br>
-    <label>Peak TR velocity (m/s):</label>
+    <label>TR velocity (m/s):</label>
     <input type="number" id="tr" step="0.01"><br>
     <button type="button" onclick="gradeDF()">Grade</button>
   </form>
   <div class="result" id="dfResult"></div>
   <ul>
-    <li><b>Grade I:</b> Impaired relaxation (E/A &lt; 0.8 and E &le; 50 cm/s)</li>
-    <li><b>Grade II:</b> Indeterminate or pseudonormal (E/A 0.8–2.0); grade by majority of 3 other parameters (E/e′ &gt; 14, LA index &gt; 34, TR Vmax &gt; 2.8)</li>
-    <li><b>Grade III:</b> Restrictive filling (E/A ≥ 2.0)</li>
+    <li><b>Grade I (Impaired relaxation):</b> E/A ≤ 0.8 and E ≤ 50 cm/s</li>
+    <li><b>Grade III (Restrictive):</b> E/A ≥ 2</li>
+    <li><b>Grade II (Indeterminate or Pseudonormal):</b> E/A ≤ 0.8 & E > 50, or E/A 0.8–2.0; then use available of:
+      <ul>
+        <li>E/e′ > 14</li>
+        <li>TR velocity > 2.8 m/s</li>
+        <li>LA volume index > 34 mL/m²</li>
+      </ul>
+      If ≥2 positive → ↑ LAP, Grade II; ≥2 negative → Grade I; otherwise indeterminate.
+    </li>
   </ul>
 
 <script>
 function gradeDF() {
   let ea = parseFloat(document.getElementById('ea').value);
-  let ee = parseFloat(document.getElementById('ee').value);
-  let la = parseFloat(document.getElementById('la').value);
-  let tr = parseFloat(document.getElementById('tr').value);
+  let e = parseFloat(document.getElementById('e').value);
+  let ee = document.getElementById('ee').value;
+  let la = document.getElementById('la').value;
+  let tr = document.getElementById('tr').value;
 
-  if (!ea || !ee || !la || !tr) {
-    document.getElementById('dfResult').innerHTML = "Please enter all values.";
+  // Require E/A and E
+  if (isNaN(ea) || isNaN(e)) {
+    document.getElementById('dfResult').innerHTML = "E/A ratio and E-wave velocity are required.";
     return;
   }
 
-  let findings = [];
-  let abnormal = 0;
-
-  if (ee > 14) { findings.push("E/e′ > 14 (abnormal)"); abnormal++; }
-  else { findings.push("E/e′ ≤ 14 (normal)"); }
-
-  if (la > 34) { findings.push("LA volume index > 34 (abnormal)"); abnormal++; }
-  else { findings.push("LA volume index ≤ 34 (normal)"); }
-
-  if (tr > 2.8) { findings.push("TR velocity > 2.8 (abnormal)"); abnormal++; }
-  else { findings.push("TR velocity ≤ 2.8 (normal)"); }
-
-  let grade = "", summary = "";
-  if (ea < 0.8) {
-    if (/* E value available */ false) { // You can add a field for E-wave if desired
-      // Add E-wave criteria for E ≤ 50 cm/s
-    }
-    // If E/A < 0.8 (no E available) assume Grade I for now
-    grade = "Grade I (Impaired relaxation)";
-    summary = "Mitral E/A < 0.8";
-  } else if (ea >= 2.0) {
-    grade = "Grade III (Restrictive filling)";
-    summary = "Mitral E/A ≥ 2.0";
-  } else {
-    // E/A 0.8–2.0
-    if (abnormal >= 2) {
-      grade = "Grade II (Pseudonormal filling)";
-      summary = "E/A 0.8–2.0 and ≥2 abnormal parameters";
-    } else if (abnormal <= 1) {
-      grade = "Grade I (Impaired relaxation)";
-      summary = "E/A 0.8–2.0 and ≤1 abnormal parameter";
-    } else {
-      grade = "Indeterminate";
-      summary = "E/A 0.8–2.0 and unclear parameter majority";
-    }
+  // GRADE I: E/A ≤ 0.8 and E ≤ 50 cm/s
+  if (ea <= 0.8 && e <= 50) {
+    document.getElementById('dfResult').innerHTML =
+      "<b>Grade I (Impaired relaxation / Normal LAP)</b><br>E/A ≤ 0.8 and E ≤ 50 cm/s";
+    return;
   }
 
-  document.getElementById('dfResult').innerHTML = `
-    <b>Diastolic function: ${grade}</b><br>
-    <b>Summary:</b> ${summary}<br>
-    <ul>${findings.map(f => "<li>" + f + "</li>").join('')}</ul>
-  `;
+  // GRADE III: E/A ≥ 2
+  if (ea >= 2) {
+    document.getElementById('dfResult').innerHTML =
+      "<b>Grade III (Restrictive filling / ↑ LAP)</b><br>E/A ≥ 2.0";
+    return;
+  }
+
+  // GRADE II / Indeterminate
+  let findings = [];
+  let positive = 0, negative = 0, n = 0;
+
+  if (ee !== "") {
+    n++;
+    if (parseFloat(ee) > 14) { findings.push("E/e' > 14 (positive)"); positive++; }
+    else { findings.push("E/e' ≤ 14 (negative)"); negative++; }
+  }
+  if (tr !== "") {
+    n++;
+    if (parseFloat(tr) > 2.8) { findings.push("TR Vmax > 2.8 (positive)"); positive++; }
+    else { findings.push("TR Vmax ≤ 2.8 (negative)"); negative++; }
+  }
+  if (la !== "") {
+    n++;
+    if (parseFloat(la) > 34) { findings.push("LA volume index > 34 (positive)"); positive++; }
+    else { findings.push("LA volume index ≤ 34 (negative)"); negative++; }
+  }
+
+  if ((ea <= 0.8 && e > 50) || (ea > 0.8 && ea < 2.0)) {
+    if (n === 0) {
+      document.getElementById('dfResult').innerHTML =
+        "At least one of E/e', LA index, or TR velocity is required for this step.";
+      return;
+    }
+    let summary = "";
+    if (positive >= 2) {
+      summary = "<b>Grade II (Pseudonormal / ↑ LAP)</b><br>At least 2 positive findings.";
+    } else if (negative >= 2) {
+      summary = "<b>Grade I (Impaired relaxation / Normal LAP)</b><br>At least 2 negative findings.";
+    } else {
+      summary = "<b>Indeterminate (Consider more data or PV flow)</b><br>Majority not reached.";
+    }
+    document.getElementById('dfResult').innerHTML =
+      summary + "<br><ul>" + findings.map(x => "<li>" + x + "</li>").join('') + "</ul>";
+    return;
+  }
+
+  // No path matches
+  document.getElementById('dfResult').innerHTML =
+    "Unable to classify with entered values. Please check inputs.";
 }
 </script>
 </body>
 </html>
-
