@@ -7,6 +7,21 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 1.5em; max-width: 850px; background: #fafbfc;}
     h1, h2 { color: #024;}
+    .calculator-links { margin-bottom: 2em; }
+    .calc-btn {
+      display: inline-block;
+      margin: 0.5em 1em 0.5em 0;
+      padding: 0.7em 1.6em;
+      background: #e3ecfa;
+      color: #024;
+      border: 1px solid #b7cbe9;
+      border-radius: 1.5em;
+      font-size: 1.07em;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .calc-btn:hover { background: #d4e1f6; }
     table { border-collapse: collapse; width: 100%; margin: 1em 0;}
     th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center;}
     th { background: #eef;}
@@ -21,70 +36,14 @@
 
 <h1>Echo Reader Companion (2025)</h1>
 <p>
-  Quick reference for key echo parameters, with an aortic root Z-score calculator using the Roman/Devereux nomogram (Am J Cardiol 2012;110:1189–1194). <br>
-  
-<div class="section">
-  <h2>Aortic Root Z-Score Calculator</h2>
-  <form id="zform" onsubmit="event.preventDefault(); calcZ();">
-    <label>Age (years):</label>
-    <input type="number" id="age" value="40" min="1" max="120" step="1">
-    &nbsp;&nbsp;
-    <label>Height:</label>
-    <input type="number" id="height" value="66" min="10" max="100" step="0.1">
-    <select id="height_unit">
-      <option value="in">inches</option>
-      <option value="cm">cm</option>
-    </select>
-    &nbsp;&nbsp;
-    <label>Weight:</label>
-    <input type="number" id="weight" value="150" min="10" max="500" step="0.1">
-    <select id="weight_unit">
-      <option value="lb">lbs</option>
-      <option value="kg">kg</option>
-    </select>
-    <br>
-    <label>Gender:</label>
-    <select id="gender">
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-    </select>
-    &nbsp;&nbsp;
-    <label>Aortic Root Diameter (cm):</label>
-    <input type="number" id="diam" value="3.5" min="1" max="10" step="0.01">
-    <br>
-    <button type="button" onclick="calcZ()">Calculate Z-score</button>
-  </form>
-  <div class="zscore-result" id="zout"></div>
+  Quick reference for key echo parameters, with calculators for aortic root Z-score, diastolic function, and mitral regurgitation quantification.
+</p>
 
+<div class="calculator-links">
+  <a href="aortic-root-zscore.html" class="calc-btn" target="_blank">Aortic Root Z-Score Calculator</a>
+  <a href="diastolic-function.html" class="calc-btn" target="_blank">Diastolic Function Grading Tool</a>
+  <a href="PISA-calculator.html" class="calc-btn" target="_blank">PISA MR Calculator</a>
 </div>
-
-<script>
-function calcZ() {
-  let height = parseFloat(document.getElementById('height').value);
-  let weight = parseFloat(document.getElementById('weight').value);
-  let diam = parseFloat(document.getElementById('diam').value);
-  let age = parseFloat(document.getElementById('age').value);
-  let gender = document.getElementById('gender').value === "Male" ? 1 : 2;
-  // Convert to metric if needed
-  if (document.getElementById('height_unit').value === "in") height = height * 2.54;
-  if (document.getElementById('weight_unit').value === "lb") weight = weight / 2.20462;
-
-  // Calculate BSA (Mosteller formula)
-  let bsa = Math.sqrt(height * weight / 3600);
-
-  // Roman/Devereux Am J Cardiol 2012 formula
-  let mean = 2.423 + (0.009 * age) + (0.461 * bsa) - (0.267 * gender);
-  let sd = 0.261;
-  let z = (diam - mean) / sd;
-  let sev = "Normal";
-  if (z >= 4) sev = "Severely dilated";
-  else if (z >= 3) sev = "Moderately dilated";
-  else if (z >= 2) sev = "Mildly dilated";
-  document.getElementById('zout').innerHTML =
-    `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
-    <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
-}
-</script>
 
 <div class="section">
   <h2>Reference Tables and Guideline Cutoffs</h2>
@@ -136,21 +95,9 @@ function calcZ() {
     <tr><td>EOA (cm&sup2;)</td><td>&ge;2.0</td><td>1.0–2.0</td><td>&lt;1.0</td></tr>
   </table>
   <p><em>Note: Do not use PHT for EOA of prosthetic valves; use SV/VTI.</em></p>
-<div class="section" style="margin-bottom:2em;">
-<div class="section" style="margin-bottom:2em;">
-  <h2>Valvular &amp; Diastolic Function Tools</h2>
-  <a href="PISA-calculator.html" target="_blank" style="font-size:1.1em; color:#1565c0; text-decoration:underline;">
-    ➔ Open PISA Mitral Regurgitation Calculator
-  </a>
-  <br>
-  <small>For PISA-based MR quantification</small>
-  <br><br>
-  <a href="diastolic-function.html" target="_blank" style="font-size:1.1em; color:#1565c0; text-decoration:underline;">
-    ➔ Open Diastolic Function Grading Tool
-  </a>
-  <br>
-  <small>For automated diastolic function assessment (ASE 2016 algorithm)</small>
 </div>
+
+<div class="section" style="margin-bottom:2em;">
   <h3>Right Heart (2025 Guideline)</h3>
   <table>
     <tr><th>Parameter</th><th>Normal</th><th>Mild</th><th>Moderate</th><th>Severe</th></tr>
@@ -169,15 +116,6 @@ function calcZ() {
     <li>Moderate: 42–48</li>
     <li>Severe: &gt;48</li>
   </ul>
-
-  <h3>Pericardial Effusion Size (2013 ASE)</h3>
-  <ul>
-    <li>Trace: 1–2 mm (localized)</li>
-    <li>Small: &lt;10 mm</li>
-    <li>Moderate: 10–20 mm</li>
-    <li>Large: &gt;20 mm</li>
-  </ul>
-
   <h3>Aortic Measurement</h3>
   <ul>
     <li>Use diastole, leading-edge, perpendicular to flow</li>
@@ -197,3 +135,4 @@ function calcZ() {
 </footer>
 </body>
 </html>
+
