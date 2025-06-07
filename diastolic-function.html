@@ -2,116 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ASE 2016 Diastolic Function Grader</title>
+  <title>ASE 2016 Diastolic Dysfunction Grading</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; background: #f7fafd; max-width: 650px;}
+    body { font-family: Arial, sans-serif; margin: 2em; background: #fafbfc; max-width: 650px;}
     h2 { color: #024; }
     label { font-weight: bold; }
-    input { margin: 0.3em 0 1em 0.5em; }
-    .result { font-weight: bold; font-size: 1.15em; margin: 1em 0; color: #155; }
-    ul,li { line-height: 1.5;}
+    input, select { margin: 0.2em 0.7em 0.7em 0.3em; }
+    .result { font-weight: bold; font-size: 1.1em; margin: 1em 0; color: #227; }
+    .section { margin-bottom: 2em;}
   </style>
 </head>
 <body>
-  <h2>ASE 2016 Diastolic Function Grading Tool (Normal LVEF)</h2>
-  <form id="dfForm">
-    <label>E/A ratio:</label>
-    <input type="number" id="ea" step="0.01"><br>
-    <label>E-wave velocity (cm/s):</label>
-    <input type="number" id="e" step="0.1"><br>
-    <label>Average E/e′:</label>
-    <input type="number" id="ee" step="0.1"><br>
-    <label>LA volume index (mL/m²):</label>
-    <input type="number" id="la" step="0.1"><br>
-    <label>TR velocity (m/s):</label>
-    <input type="number" id="tr" step="0.01"><br>
-    <button type="button" onclick="gradeDF()">Grade</button>
-  </form>
-  <div class="result" id="dfResult"></div>
-  <ul>
-    <li><b>Grade I (Impaired relaxation):</b> E/A ≤ 0.8 and E ≤ 50 cm/s</li>
-    <li><b>Grade III (Restrictive):</b> E/A ≥ 2</li>
-    <li><b>Grade II (Indeterminate or Pseudonormal):</b> E/A ≤ 0.8 & E > 50, or E/A 0.8–2.0; then use available of:
-      <ul>
-        <li>E/e′ > 14</li>
-        <li>TR velocity > 2.8 m/s</li>
-        <li>LA volume index > 34 mL/m²</li>
-      </ul>
-      If ≥2 positive → ↑ LAP, Grade II; ≥2 negative → Grade I; otherwise indeterminate.
-    </li>
-  </ul>
+<h2>ASE 2016 Diastolic Dysfunction Grading Tool</h2>
+<form id="diastolicForm">
+  <label>LVEF reduced? </label>
+  <select id="ef_reduced">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+  <br>
+  <label>E/e′:</label>
+  <input type="number" id="ee" step="0.1" placeholder="E/e′"><br>
+  <label>Septal e′ (cm/s):</label>
+  <input type="number" id="septal" step="0.1" placeholder="Septal e′"><br>
+  <label>Lateral e′ (cm/s):</label>
+  <input type="number" id="lateral" step="0.1" placeholder="Lateral e′"><br>
+  <label>TR velocity (m/s):</label>
+  <input type="number" id="tr" step="0.1" placeholder="TR velocity"><br>
+  <label>LA volume index (ml/m²):</label>
+  <input type="number" id="lavi" step="0.1" placeholder="LAVI"><br>
+  <label>E/A ratio:</label>
+  <input type="number" id="ea" step="0.01" placeholder="E/A"><br>
+  <label>Mitral E velocity (cm/s):</label>
+  <input type="number" id="evel" step="0.1" placeholder="E velocity"><br>
+  <button type="button" onclick="gradeDiastolic()">Grade Diastolic Function</button>
+</form>
+<div class="result" id="dfout"></div>
 
 <script>
-function gradeDF() {
-  let ea = parseFloat(document.getElementById('ea').value);
-  let e = parseFloat(document.getElementById('e').value);
-  let ee = document.getElementById('ee').value;
-  let la = document.getElementById('la').value;
-  let tr = document.getElementById('tr').value;
+function gradeDiastolic() {
+  // Major criteria:
+  const ee = parseFloat(document.getElementById('ee').value);
+  const septal = parseFloat(document.getElementById('septal').value);
+  const lateral = parseFloat(document.getElementById('lateral').value);
+  const tr = parseFloat(document.getElementById('tr').value);
+  const lavi = parseFloat(document.getElementById('lavi').value);
+  const ef_reduced = document.getElementById('ef_reduced').value === "yes";
 
-  // Require E/A and E
-  if (isNaN(ea) || isNaN(e)) {
-    document.getElementById('dfResult').innerHTML = "E/A ratio and E-wave velocity are required.";
+  // Count abnormal major criteria (ASE 2016):
+  let abn = 0, total = 0;
+
+  if (!isNaN(ee)) { if (ee > 14) abn++; total++; }
+  if (!isNaN(septal) || !isNaN(lateral)) {
+    // Use whichever is available, abnormal if septal <7 or lateral <10
+    if ((!isNaN(septal) && septal < 7) || (!isNaN(lateral) && lateral < 10)) abn++; 
+    total++;
+  }
+  if (!isNaN(tr)) { if (tr > 2.8) abn++; total++; }
+  if (!isNaN(lavi)) { if (lavi > 34) abn++; total++; }
+
+  // If no data:
+  if (total === 0 && !ef_reduced) {
+    document.getElementById('dfout').innerHTML = "Enter at least one criterion or indicate reduced EF.";
     return;
   }
 
-  // GRADE I: E/A ≤ 0.8 and E ≤ 50 cm/s
-  if (ea <= 0.8 && e <= 50) {
-    document.getElementById('dfResult').innerHTML =
-      "<b>Grade I (Impaired relaxation / Normal LAP)</b><br>E/A ≤ 0.8 and E ≤ 50 cm/s";
-    return;
-  }
+  // If >50% positive or EF reduced, proceed to grading
+  if ((abn / total > 0.5 && total > 0) || ef_reduced) {
+    // Grading with mitral inflow
+    const ea = parseFloat(document.getElementById('ea').value);
+    const evel = parseFloat(document.getElementById('evel').value);
 
-  // GRADE III: E/A ≥ 2
-  if (ea >= 2) {
-    document.getElementById('dfResult').innerHTML =
-      "<b>Grade III (Restrictive filling / ↑ LAP)</b><br>E/A ≥ 2.0";
-    return;
-  }
-
-  // GRADE II / Indeterminate
-  let findings = [];
-  let positive = 0, negative = 0, n = 0;
-
-  if (ee !== "") {
-    n++;
-    if (parseFloat(ee) > 14) { findings.push("E/e' > 14 (positive)"); positive++; }
-    else { findings.push("E/e' ≤ 14 (negative)"); negative++; }
-  }
-  if (tr !== "") {
-    n++;
-    if (parseFloat(tr) > 2.8) { findings.push("TR Vmax > 2.8 (positive)"); positive++; }
-    else { findings.push("TR Vmax ≤ 2.8 (negative)"); negative++; }
-  }
-  if (la !== "") {
-    n++;
-    if (parseFloat(la) > 34) { findings.push("LA volume index > 34 (positive)"); positive++; }
-    else { findings.push("LA volume index ≤ 34 (negative)"); negative++; }
-  }
-
-  if ((ea <= 0.8 && e > 50) || (ea > 0.8 && ea < 2.0)) {
-    if (n === 0) {
-      document.getElementById('dfResult').innerHTML =
-        "At least one of E/e', LA index, or TR velocity is required for this step.";
+    if (isNaN(ea)) {
+      document.getElementById('dfout').innerHTML = "Enter E/A ratio for grading.";
       return;
     }
-    let summary = "";
-    if (positive >= 2) {
-      summary = "<b>Grade II (Pseudonormal / ↑ LAP)</b><br>At least 2 positive findings.";
-    } else if (negative >= 2) {
-      summary = "<b>Grade I (Impaired relaxation / Normal LAP)</b><br>At least 2 negative findings.";
-    } else {
-      summary = "<b>Indeterminate (Consider more data or PV flow)</b><br>Majority not reached.";
+    if (ea >= 2) {
+      document.getElementById('dfout').innerHTML = "Grade III diastolic dysfunction (E/A ≥ 2)";
+      return;
     }
-    document.getElementById('dfResult').innerHTML =
-      summary + "<br><ul>" + findings.map(x => "<li>" + x + "</li>").join('') + "</ul>";
-    return;
+    if (ea <= 0.8 && !isNaN(evel) && evel <= 50) {
+      document.getElementById('dfout').innerHTML = "Grade I diastolic dysfunction (E/A ≤ 0.8 and E ≤ 50)";
+      return;
+    }
+    // If E/A ≤ 0.8 and E > 50, or 0.8 < E/A < 2, use 3 criteria
+    let crit = 0, avail = 0;
+    if (!isNaN(ee)) { avail++; if (ee > 14) crit++; }
+    if (!isNaN(tr)) { avail++; if (tr > 2.8) crit++; }
+    if (!isNaN(lavi)) { avail++; if (lavi > 34) crit++; }
+    if (avail < 2) {
+      document.getElementById('dfout').innerHTML = "Need at least 2 of 3 secondary criteria (E/e′, TR velocity, LAVI) for grading.";
+      return;
+    } else if (crit >= 2) {
+      document.getElementById('dfout').innerHTML = "Grade II diastolic dysfunction (>50% positive secondary criteria)";
+      return;
+    } else if (crit === 1 && avail >= 2) {
+      document.getElementById('dfout').innerHTML = "Indeterminate diastolic function (50% positive secondary criteria)";
+      return;
+    } else if (crit === 0 && avail >= 2) {
+      document.getElementById('dfout').innerHTML = "Grade I diastolic dysfunction (<50% positive secondary criteria)";
+      return;
+    }
   }
-
-  // No path matches
-  document.getElementById('dfResult').innerHTML =
-    "Unable to classify with entered values. Please check inputs.";
-}
-</script>
-</body>
-</html>
+  // If <50% abnormal, normal diastolic function
+  else if (abn / total < 0.5) {
+    document.getElementById('dfout').innerHTML = "Normal diastolic function (<50% abnormal criteria)";
