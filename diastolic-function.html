@@ -41,7 +41,7 @@
 
 <script>
 function gradeDiastolic() {
-  // Major criteria:
+  // Step 1: Four major criteria
   const ee = parseFloat(document.getElementById('ee').value);
   const septal = parseFloat(document.getElementById('septal').value);
   const lateral = parseFloat(document.getElementById('lateral').value);
@@ -49,25 +49,21 @@ function gradeDiastolic() {
   const lavi = parseFloat(document.getElementById('lavi').value);
   const ef_reduced = document.getElementById('ef_reduced').value === "yes";
 
-  // Count abnormal major criteria (ASE 2016):
   let abn = 0, total = 0;
-
   if (!isNaN(ee)) { if (ee > 14) abn++; total++; }
   if (!isNaN(septal) || !isNaN(lateral)) {
-    // Use whichever is available, abnormal if septal <7 or lateral <10
-    if ((!isNaN(septal) && septal < 7) || (!isNaN(lateral) && lateral < 10)) abn++; 
+    if ((!isNaN(septal) && septal < 7) || (!isNaN(lateral) && lateral < 10)) abn++;
     total++;
   }
   if (!isNaN(tr)) { if (tr > 2.8) abn++; total++; }
   if (!isNaN(lavi)) { if (lavi > 34) abn++; total++; }
 
-  // If no data:
   if (total === 0 && !ef_reduced) {
     document.getElementById('dfout').innerHTML = "Enter at least one criterion or indicate reduced EF.";
     return;
   }
 
-  // If >50% positive or EF reduced, proceed to grading
+  // Step 2: If >50% positive OR reduced EF, proceed to grading
   if ((abn / total > 0.5 && total > 0) || ef_reduced) {
     // Grading with mitral inflow
     const ea = parseFloat(document.getElementById('ea').value);
@@ -77,39 +73,52 @@ function gradeDiastolic() {
       document.getElementById('dfout').innerHTML = "Enter E/A ratio for grading.";
       return;
     }
+
+    // E/A >= 2 = Grade III
     if (ea >= 2) {
       document.getElementById('dfout').innerHTML = "Grade III diastolic dysfunction (E/A ≥ 2)";
       return;
     }
+
+    // E/A ≤ 0.8 and E ≤ 50 = Grade I
     if (ea <= 0.8 && !isNaN(evel) && evel <= 50) {
       document.getElementById('dfout').innerHTML = "Grade I diastolic dysfunction (E/A ≤ 0.8 and E ≤ 50)";
       return;
     }
-    // If E/A ≤ 0.8 and E > 50, or 0.8 < E/A < 2, use 3 criteria
-    let crit = 0, avail = 0;
-    if (!isNaN(ee)) { avail++; if (ee > 14) crit++; }
-    if (!isNaN(tr)) { avail++; if (tr > 2.8) crit++; }
-    if (!isNaN(lavi)) { avail++; if (lavi > 34) crit++; }
-    if (avail < 2) {
-      document.getElementById('dfout').innerHTML = "Need at least 2 of 3 secondary criteria (E/e′, TR velocity, LAVI) for grading.";
-      return;
-    } else if (crit >= 2) {
-      document.getElementById('dfout').innerHTML = "Grade II diastolic dysfunction (>50% positive secondary criteria)";
-      return;
-    } else if (crit === 1 && avail >= 2) {
-      document.getElementById('dfout').innerHTML = "Indeterminate diastolic function (50% positive secondary criteria)";
-      return;
-    } else if (crit === 0 && avail >= 2) {
-      document.getElementById('dfout').innerHTML = "Grade I diastolic dysfunction (<50% positive secondary criteria)";
-      return;
+
+    // E/A ≤ 0.8 and E > 50 OR 0.8 < E/A < 2
+    if ((ea <= 0.8 && !isNaN(evel) && evel > 50) || (ea > 0.8 && ea < 2)) {
+      // Now use 3 secondary criteria
+      let crit = 0, avail = 0;
+      if (!isNaN(ee)) { avail++; if (ee > 14) crit++; }
+      if (!isNaN(tr)) { avail++; if (tr > 2.8) crit++; }
+      if (!isNaN(lavi)) { avail++; if (lavi > 34) crit++; }
+      if (avail < 2) {
+        document.getElementById('dfout').innerHTML = "Need at least 2 of 3 secondary criteria (E/e′, TR velocity, LAVI) for grading.";
+        return;
+      } else if (crit >= 2) {
+        document.getElementById('dfout').innerHTML = "Grade II diastolic dysfunction (>50% positive secondary criteria)";
+        return;
+      } else if (crit === 1 && avail >= 2) {
+        document.getElementById('dfout').innerHTML = "Indeterminate diastolic function (50% positive secondary criteria)";
+        return;
+      } else if (crit === 0 && avail >= 2) {
+        document.getElementById('dfout').innerHTML = "Grade I diastolic dysfunction (<50% positive secondary criteria)";
+        return;
+      }
     }
+
+    // If inputs are not complete for grading
+    document.getElementById('dfout').innerHTML = "Insufficient data to assign grade.";
+    return;
   }
-  // If <50% abnormal, normal diastolic function
+
+  // <50% abnormal = Normal
   else if (abn / total < 0.5) {
     document.getElementById('dfout').innerHTML = "Normal diastolic function (<50% abnormal criteria)";
     return;
   }
-  // If exactly 50% abnormal or insufficient data
+  // 50% abnormal = Indeterminate
   else {
     document.getElementById('dfout').innerHTML = "Indeterminate diastolic function (50% abnormal criteria)";
     return;
@@ -118,3 +127,4 @@ function gradeDiastolic() {
 </script>
 </body>
 </html>
+
