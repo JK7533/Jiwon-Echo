@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Echo Reader Companion (2025)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 1.5em; max-width: 850px; background: #fafbfc;}
+    h1, h2 { color: #024;}
+    table { border-collapse: collapse; width: 100%; margin: 1em 0;}
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center;}
+    th { background: #eef;}
+    .section { margin-bottom: 2em;}
+    .zscore-result { font-weight: bold; font-size: 1.2em; margin: 1em 0; color: #227;}
+    label { font-weight: bold; }
+    input, select { margin: 0.2em 0.5em 0.7em 0.5em; }
+    small { color: #555; }
+  </style>
+</head>
+<body>
+
+<h1>Echo Reader Companion (2025)</h1>
+<p>
+  Quick reference for key echo parameters, with an aortic root Z-score calculator using the Roman/Devereux nomogram (Am J Cardiol 2012;110:1189–1194). <br>
+  <em>Compiled and maintained by Jiwon Kim, MD. Contact with suggestions or comments: <a href="mailto:jik9027@med.cornell.edu">jik9027@med.cornell.edu</a></em>
+</p>
+
+<div class="section">
+  <h2>Aortic Root Z-Score Calculator</h2>
+  <form id="zform" onsubmit="event.preventDefault(); calcZ();">
+    <label>Age (years):</label>
+    <input type="number" id="age" value="40" min="1" max="120" step="1">
+    &nbsp;&nbsp;
+    <label>Height:</label>
+    <input type="number" id="height" value="66" min="10" max="100" step="0.1">
+    <select id="height_unit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+    </select>
+    &nbsp;&nbsp;
+    <label>Weight:</label>
+    <input type="number" id="weight" value="150" min="10" max="500" step="0.1">
+    <select id="weight_unit">
+      <option value="lb">lbs</option>
+      <option value="kg">kg</option>
+    </select>
+    <br>
+    <label>Gender:</label>
+    <select id="gender">
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+    &nbsp;&nbsp;
+    <label>Aortic Root Diameter (cm):</label>
+    <input type="number" id="diam" value="3.5" min="1" max="10" step="0.01">
+    <br>
+    <button type="button" onclick="calcZ()">Calculate Z-score</button>
+  </form>
+  <div class="zscore-result" id="zout"></div>
+  <small>
+    Formula: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.
+    <a href="https://pubmed.ncbi.nlm.nih.gov/22728012/" target="_blank">PubMed link</a>
+  </small>
+</div>
+
+<script>
+function calcZ() {
+  let height = parseFloat(document.getElementById('height').value);
+  let weight = parseFloat(document.getElementById('weight').value);
+  let diam = parseFloat(document.getElementById('diam').value);
+  let age = parseFloat(document.getElementById('age').value);
+  let gender = document.getElementById('gender').value === "Male" ? 1 : 2;
+  // Convert to metric if needed
+  if (document.getElementById('height_unit').value === "in") height = height * 2.54;
+  if (document.getElementById('weight_unit').value === "lb") weight = weight / 2.20462;
+
+  // Calculate BSA (Mosteller formula)
+  let bsa = Math.sqrt(height * weight / 3600);
+
+  // Roman/Devereux Am J Cardiol 2012 formula
+  let mean = 2.423 + (0.009 * age) + (0.461 * bsa) - (0.267 * gender);
+  let sd = 0.261;
+  let z = (diam - mean) / sd;
+  let sev = "Normal";
+  if (z >= 4) sev = "Severely dilated";
+  else if (z >= 3) sev = "Moderately dilated";
+  else if (z >= 2) sev = "Mildly dilated";
+  document.getElementById('zout').innerHTML =
+    `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
+    <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
+}
+</script>
+
+<div class="section">
+  <h2>Reference Tables and Guideline Cutoffs</h2>
+
+  <h3>LV Ejection Fraction</h3>
+  <table>
+    <tr><th>LV EF (%)</th><th>Interpretation</th></tr>
+    <tr><td>&ge;55</td><td>Normal</td></tr>
+    <tr><td>45–54</td><td>Mildly reduced</td></tr>
+    <tr><td>35–44</td><td>Moderately reduced</td></tr>
+    <tr><td>25–34</td><td>Severely reduced</td></tr>
+    <tr><td>&lt;25</td><td>Very severely reduced</td></tr>
+  </table>
+
+  <h3>Prosthetic Aortic Valve Stenosis (2024 ASE)</h3>
+  <table>
+    <tr>
+      <th></th><th>Normal</th><th>Possible Stenosis</th><th>Significant Stenosis</th>
+    </tr>
+    <tr><td>Vmax (m/sec)</td><td>&lt;3</td><td>3–4</td><td>&gt;4</td></tr>
+    <tr><td>Mean gradient (mmHg)</td><td>&lt;20</td><td>20–35</td><td>&gt;35</td></tr>
+    <tr><td>Dimensionless Index</td><td>&gt;0.35</td><td>0.25–0.35</td><td>&lt;0.25</td></tr>
+    <tr><td>EOA (cm&sup2;)</td><td>&gt;1.2</td><td>0.8–1.2</td><td>&lt;0.8</td></tr>
+  </table>
+  <ul>
+    <li>Consider valve type/size and change from prior exams</li>
+    <li>If Vmax &gt;4 m/s or mean gradient &gt;35 mmHg: Likely significant stenosis; CT may be indicated</li>
+    <li>If Vmax 3–4 m/s or mean gradient 20–35 mmHg: compare to post-op study or prior</li>
+  </ul>
+
+  <h3>Mitral Stenosis Severity</h3>
+  <table>
+    <tr>
+      <th></th><th>Mild</th><th>Moderate</th><th>Severe</th>
+    </tr>
+    <tr><td>Valve area (cm&sup2;)</td><td>&gt;1.5</td><td>1.0–1.5</td><td>&lt;1.0</td></tr>
+    <tr><td>Mean gradient (mmHg)</td><td>&lt;5</td><td>5–10</td><td>&gt;10</td></tr>
+    <tr><td>PA systolic pressure (mmHg)</td><td>&lt;30</td><td>30–50</td><td>&gt;50</td></tr>
+  </table>
+
+  <h3>Prosthetic Mitral Valve Stenosis</h3>
+  <table>
+    <tr>
+      <th></th><th>Normal</th><th>Possible Stenosis</th><th>Significant Stenosis</th>
+    </tr>
+    <tr><td>Vmax (m/sec)</td><td>&lt;1.9</td><td>1.9–2.5</td><td>&ge;2.5</td></tr>
+    <tr><td>Mean gradient (mmHg)</td><td>&le;5</td><td>6–10</td><td>&gt;10</td></tr>
+    <tr><td>Pressure half-time (ms)</td><td>&lt;130</td><td>130–200</td><td>&gt;200</td></tr>
+    <tr><td>EOA (cm&sup2;)</td><td>&ge;2.0</td><td>1.0–2.0</td><td>&lt;1.0</td></tr>
+  </table>
+  <p><em>Note: Do not use PHT for EOA of prosthetic valves; use SV/VTI.</em></p>
+
+  <h3>Right Heart (2025 Guideline)</h3>
+  <table>
+    <tr><th>Parameter</th><th>Normal</th><th>Mild</th><th>Moderate</th><th>Severe</th></tr>
+    <tr><td>RA vol index (mL/m²)</td><td>&lt;30</td><td>30–36</td><td>37–41</td><td>&gt;41</td></tr>
+    <tr><td>RV basal diam (cm)</td><td>&lt;4.1</td><td>4.1–4.4</td><td>4.5–4.9</td><td>&gt;4.9</td></tr>
+    <tr><td>RV basal index (cm/m²)</td><td>&lt;2.4</td><td>2.4–2.6</td><td>2.7–2.9</td><td>&gt;2.9</td></tr>
+    <tr><td>TAPSE (cm)</td><td>&gt;1.7</td><td>1.3–1.7</td><td>1.0–1.3</td><td>&le;1.0</td></tr>
+    <tr><td>TDI S' (cm/s)</td><td>&gt;9.5</td><td>7.2–9.5</td><td>5.0–7.2</td><td>&le;5.0</td></tr>
+    <tr><td>RVSP (mmHg)</td><td>&le;34</td><td>35–44</td><td>45–59</td><td>&ge;60</td></tr>
+  </table>
+
+  <h3>LA Volume Index (2015 ASE)</h3>
+  <ul>
+    <li>Normal: ≤34 cm²/m²</li>
+    <li>Mild: 35–41</li>
+    <li>Moderate: 42–48</li>
+    <li>Severe: &gt;48</li>
+  </ul>
+
+  <h3>Pericardial Effusion Size (2013 ASE)</h3>
+  <ul>
+    <li>Trace: 1–2 mm (localized)</li>
+    <li>Small: &lt;10 mm</li>
+    <li>Moderate: 10–20 mm</li>
+    <li>Large: &gt;20 mm</li>
+  </ul>
+
+  <h3>Aortic Measurement</h3>
+  <ul>
+    <li>Use diastole, leading-edge, perpendicular to flow</li>
+    <li>Aortic Root: Z-score &gt;2 = enlarged; 2–4.4 cm: mild, 4.5–4.9: mod, ≥5.0: severe (independent of BSA)</li>
+    <li>Arch: ≥3.0 cm = enlarged</li>
+    <li>Desc. Aorta: ≥3.0: mild, ≥4.0: mod, ≥5.0: severe</li>
+    <li>Upper Abd. Aorta: ≥3.0: mild, ≥4.0: mod, ≥5.0: severe</li>
+  </ul>
+</div>
+
+<footer>
+  <hr>
+  <small>
+    Echo Reader Companion © 2025 | Compiled and maintained by Jiwon Kim, MD.<br>
+    Tables adapted from ASE/ACC/AHA guidelines. Z-score calculator: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.<br>
+    Contact with suggestions or comments: <a href="mailto:jik9027@med.cornell.edu">jik9027@med.cornell.edu</a>
+  </small>
+</footer>
+</body>
+</html>
