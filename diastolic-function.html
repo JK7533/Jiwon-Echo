@@ -4,82 +4,107 @@
   <meta charset="UTF-8">
   <title>ASE 2016 Diastolic Dysfunction Grading</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; background: #fafbfc; max-width: 650px;}
-    h2 { color: #024; }
-    label { font-weight: bold; }
-    input, select { margin: 0.2em 0.7em 0.7em 0.3em; }
-    .result { font-weight: bold; font-size: 1.1em; margin: 1em 0; color: #227; }
-    .section { margin-bottom: 2em;}
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f5faff; 
+      margin: 0; 
+      padding: 2em 0; 
+    }
+    .center {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    h2 { 
+      color: #024; 
+      margin-bottom: 0.5em;
+      text-align: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 3px 20px #bed4f2;
+      padding: 2em 2.5em 2em 2.5em;
+      margin-bottom: 2em;
+      border: 1px solid #e7eefe;
+    }
+    label {
+      font-weight: bold; 
+      display: block;
+      margin-bottom: 0.18em;
+      color: #1565c0;
+    }
+    input[type="number"], select {
+      width: 88%;
+      font-size: 1.03em;
+      padding: 5px 7px;
+      margin-bottom: 1.2em;
+      border-radius: 6px;
+      border: 1px solid #b8c3d6;
+      background: #fafdff;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px 0;
+      background: #1565c0;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      margin-top: 0.8em;
+      transition: background 0.14s;
+    }
+    .btn:hover { background: #003e8b;}
+    .result { 
+      font-weight: bold; 
+      font-size: 1.14em; 
+      margin: 1.2em 0 0.8em 0; 
+      color: #236; 
+      padding: 1em;
+      background: #ecf7f9;
+      border-radius: 9px;
+      min-height: 32px;
+    }
+    @media (max-width: 540px) {
+      .center, .card { padding: 1em; }
+    }
   </style>
 </head>
 <body>
-<h2>ASE 2016 Diastolic Dysfunction Grading Tool</h2>
-<form id="diastolicForm">
-  <label>LVEF reduced? </label>
-  <select id="ef_reduced">
-    <option value="no">No</option>
-    <option value="yes">Yes</option>
-  </select>
-  <br>
-  <label>E/e′:</label>
-  <input type="number" id="ee" step="0.1" placeholder="E/e′"><br>
-  <label>Septal e′ (cm/s):</label>
-  <input type="number" id="septal" step="0.1" placeholder="Septal e′"><br>
-  <label>Lateral e′ (cm/s):</label>
-  <input type="number" id="lateral" step="0.1" placeholder="Lateral e′"><br>
-  <label>TR velocity (m/s):</label>
-  <input type="number" id="tr" step="0.1" placeholder="TR velocity"><br>
-  <label>LA volume index (ml/m²):</label>
-  <input type="number" id="lavi" step="0.1" placeholder="LAVI"><br>
-  <label>E/A ratio:</label>
-  <input type="number" id="ea" step="0.01" placeholder="E/A"><br>
-  <label>Mitral E velocity (cm/s):</label>
-  <input type="number" id="evel" step="0.1" placeholder="E velocity"><br>
-  <button type="button" onclick="gradeDiastolic()">Grade Diastolic Function</button>
-</form>
-<div class="result" id="dfout"></div>
-
-<!-- SVG Diagram -->
-<div style="text-align:center; margin:2em 0;">
-  <svg width="700" height="370" viewBox="0 0 700 370" style="max-width:98%;height:auto;background:#f8fafd;border-radius:16px;box-shadow:0 3px 12px #bbc;">
-    <rect x="10" y="10" width="680" height="350" rx="18" fill="#fff" stroke="#aad" stroke-width="2"/>
-    <text x="50%" y="38" font-size="23" font-family="Arial" text-anchor="middle" fill="#045" font-weight="bold">ASE 2016 Diastolic Function Grading</text>
-    <rect x="50" y="60" width="600" height="55" rx="12" fill="#eef" stroke="#bbb"/>
-    <text x="350" y="88" font-size="16" font-family="Arial" text-anchor="middle" fill="#046">Apply ALL 4 Criteria:</text>
-    <text x="110" y="108" font-size="14" font-family="Arial" fill="#135">• E/e′ &gt; 14</text>
-    <text x="230" y="108" font-size="14" font-family="Arial" fill="#135">• Septal e′ &lt; 7 or lat e′ &lt; 10</text>
-    <text x="480" y="108" font-size="14" font-family="Arial" fill="#135">• TR vel &gt; 2.8</text>
-    <text x="650" y="108" font-size="14" font-family="Arial" fill="#135" text-anchor="end">• LAVI &gt; 34</text>
-    <line x1="350" y1="115" x2="350" y2="133" stroke="#888" stroke-width="2" marker-end="url(#arrow)"/>
-    <defs>
-      <marker id="arrow" markerWidth="11" markerHeight="11" refX="3" refY="6" orient="auto" markerUnits="strokeWidth">
-        <path d="M2,2 L2,10 L10,6 L2,2" fill="#888"/>
-      </marker>
-    </defs>
-    <rect x="55" y="135" width="170" height="38" rx="8" fill="#e7f4ff" stroke="#bbb"/>
-    <text x="140" y="160" font-size="15" font-family="Arial" text-anchor="middle" fill="#045">≤1 abnormal</text>
-    <text x="140" y="175" font-size="13" font-family="Arial" text-anchor="middle" fill="#366">→ Normal</text>
-    <rect x="265" y="135" width="170" height="38" rx="8" fill="#fff7e6" stroke="#bbb"/>
-    <text x="350" y="160" font-size="15" font-family="Arial" text-anchor="middle" fill="#964">2 abnormal</text>
-    <text x="350" y="175" font-size="13" font-family="Arial" text-anchor="middle" fill="#b75">→ Indeterminate</text>
-    <rect x="475" y="135" width="170" height="38" rx="8" fill="#ffe9e9" stroke="#bbb"/>
-    <text x="560" y="160" font-size="15" font-family="Arial" text-anchor="middle" fill="#a32">≥3 abnormal</text>
-    <text x="560" y="175" font-size="13" font-family="Arial" text-anchor="middle" fill="#d33">→ Grade diastolic dysfunction</text>
-    <line x1="560" y1="173" x2="560" y2="200" stroke="#a44" stroke-width="2" marker-end="url(#arrow)"/>
-    <rect x="160" y="205" width="400" height="140" rx="14" fill="#f0f8ec" stroke="#aac"/>
-    <text x="360" y="230" font-size="17" font-family="Arial" text-anchor="middle" fill="#085" font-weight="bold">Mitral Inflow + Supportive Criteria</text>
-    <text x="175" y="250" font-size="15" font-family="Arial" fill="#177">E/A ≥ 2</text>
-    <text x="295" y="250" font-size="14" font-family="Arial" fill="#555">→ Grade III (Restrictive)</text>
-    <text x="175" y="270" font-size="15" font-family="Arial" fill="#177">E/A ≤ 0.8 and E ≤ 50 cm/s</text>
-    <text x="390" y="270" font-size="14" font-family="Arial" fill="#555">→ Grade I (Impaired relaxation)</text>
-    <text x="175" y="290" font-size="15" font-family="Arial" fill="#177">E/A ≤ 0.8 and E &gt; 50, or 0.8 &lt; E/A &lt; 2:</text>
-    <text x="200" y="310" font-size="13" font-family="Arial" fill="#555">Count positive: E/e′ &gt; 14, TR &gt; 2.8, LAVI &gt; 34</text>
-    <text x="200" y="330" font-size="13" font-family="Arial" fill="#555">If 2–3 positive → Grade II (Pseudo-normal)</text>
-    <text x="200" y="350" font-size="13" font-family="Arial" fill="#555">If 0–1 positive → Grade I</text>
-    <text x="200" y="370" font-size="13" font-family="Arial" fill="#555">If missing → Indeterminate</text>
-  </svg>
-  <br>
-  <small>ASE 2016 Diastolic Dysfunction Grading Algorithm (Sinus rhythm, not severely reduced EF)</small>
+<div class="center">
+  <h2>ASE 2016 Diastolic Dysfunction Grading Tool</h2>
+  <form id="diastolicForm" class="card" onsubmit="event.preventDefault(); gradeDiastolic();">
+    <label for="ef_reduced">LVEF reduced?</label>
+    <select id="ef_reduced">
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+    
+    <label for="ee">E/e′</label>
+    <input type="number" id="ee" step="0.1" placeholder="E/e′">
+    
+    <label for="septal">Septal e′ (cm/s)</label>
+    <input type="number" id="septal" step="0.1" placeholder="Septal e′">
+    
+    <label for="lateral">Lateral e′ (cm/s)</label>
+    <input type="number" id="lateral" step="0.1" placeholder="Lateral e′">
+    
+    <label for="tr">TR velocity (m/s)</label>
+    <input type="number" id="tr" step="0.1" placeholder="TR velocity">
+    
+    <label for="lavi">LA volume index (ml/m²)</label>
+    <input type="number" id="lavi" step="0.1" placeholder="LAVI">
+    
+    <label for="ea">E/A ratio</label>
+    <input type="number" id="ea" step="0.01" placeholder="E/A">
+    
+    <label for="evel">Mitral E velocity (cm/s)</label>
+    <input type="number" id="evel" step="0.1" placeholder="E velocity">
+    
+    <button type="submit" class="btn">Grade Diastolic Function</button>
+  </form>
+  <div class="result" id="dfout"></div>
 </div>
 
 <script>
@@ -158,4 +183,5 @@ function gradeDiastolic() {
 </script>
 </body>
 </html>
+
 
