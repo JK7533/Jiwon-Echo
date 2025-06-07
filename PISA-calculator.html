@@ -31,14 +31,35 @@
 
   <table>
     <tr>
-      <th>Severity</th>
-      <th>ERO (mm²)</th>
-      <th>RVol (mL/beat)</th>
+      <th></th>
+      <th>Mild</th>
+      <th>Moderate</th>
+      <th>Severe</th>
     </tr>
-    <tr><td>Mild</td><td>&lt;20</td><td>&lt;30</td></tr>
-    <tr><td>Mild-Moderate</td><td>20–30</td><td>30–45</td></tr>
-    <tr><td>Moderate-Severe</td><td>30–40</td><td>45–60</td></tr>
-    <tr><td>Severe</td><td>&ge;40</td><td>&ge;60</td></tr>
+    <tr>
+      <td>Vena contracta width (mm)</td>
+      <td>&lt;3</td>
+      <td>3–7</td>
+      <td>&gt;7</td>
+    </tr>
+    <tr>
+      <td>Regurgitant volume (mL/beat)</td>
+      <td>&lt;30</td>
+      <td>30–59</td>
+      <td>&ge;60</td>
+    </tr>
+    <tr>
+      <td>Regurgitant fraction (%)</td>
+      <td>&lt;30</td>
+      <td>30–49</td>
+      <td>&gt;50</td>
+    </tr>
+    <tr>
+      <td>Regurgitant orifice area (cm²)</td>
+      <td>&lt;0.2</td>
+      <td>0.2–0.39</td>
+      <td>&ge;0.4</td>
+    </tr>
   </table>
 
 <script>
@@ -60,11 +81,10 @@ function calcPISA() {
   // RVol: ERO (in mm²) * VTI (in cm) (convert mm² to cm²)
   let RVol = (ERO / 100) * vti; // in mL/beat
 
-  // Interpretation
+  // Severity based only on ERO and RVol for primary MR (matches table)
   let sev = '';
   if (ERO < 20 && RVol < 30) sev = 'Mild';
-  else if (ERO < 30 && RVol < 45) sev = 'Mild-Moderate';
-  else if (ERO < 40 && RVol < 60) sev = 'Moderate-Severe';
+  else if (ERO < 40 && RVol < 60) sev = 'Moderate';
   else sev = 'Severe';
 
   document.getElementById('pisaResult').innerHTML = `
@@ -78,3 +98,4 @@ function calcPISA() {
 </script>
 </body>
 </html>
+
