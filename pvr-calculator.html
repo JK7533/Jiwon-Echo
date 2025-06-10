@@ -1,0 +1,306 @@
+<!-- PVR Calculator Section -->
+<div class="calculator-section">
+    <h2>Pulmonary Vascular Resistance Calculator</h2>
+    
+    <div class="method-tabs">
+        <div class="tab active" onclick="switchPVRTab('simplified')">Simplified Method</div>
+        <div class="tab" onclick="switchPVRTab('abbas')">Abbas Formula</div>
+    </div>
+
+    <!-- Simplified Method -->
+    <div id="pvr-simplified" class="tab-content active">
+        <h3>Simplified Method</h3>
+        <div class="formula">
+            PVR = (Peak TR velocity × 10) / RVOT VTI
+        </div>
+        
+        <div class="input-group">
+            <label for="pvrTrVelocity">Peak TR Velocity:</label>
+            <input type="number" id="pvrTrVelocity" step="0.1" placeholder="e.g. 3.2">
+            <span class="unit">m/s</span>
+        </div>
+        
+        <div class="input-group">
+            <label for="pvrRvotVti">RVOT VTI:</label>
+            <input type="number" id="pvrRvotVti" step="0.1" placeholder="e.g. 18">
+            <span class="unit">cm</span>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculatePVRSimplified()">Calculate PVR</button>
+    </div>
+
+    <!-- Abbas Formula -->
+    <div id="pvr-abbas" class="tab-content">
+        <h3>Abbas Formula</h3>
+        <div class="formula">
+            PVR = 0.16 × (Peak TR velocity)² + 0.34
+        </div>
+        
+        <div class="input-group">
+            <label for="pvrAbbasTR">Peak TR Velocity:</label>
+            <input type="number" id="pvrAbbasTR" step="0.1" placeholder="e.g. 3.2">
+            <span class="unit">m/s</span>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculatePVRAbbas()">Calculate PVR</button>
+    </div>
+
+    <div id="pvrResults"></div>
+</div>
+
+<!-- PVR Reference Table -->
+<div class="calculator-section reference-table">
+    <h3>PVR Reference Values</h3>
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>PVR (Wood Units)</th>
+            <th>PVR (dyn·s·cm⁻⁵)</th>
+            <th>Clinical Significance</th>
+        </tr>
+        <tr>
+            <td><strong>Normal</strong></td>
+            <td>&lt; 2.0</td>
+            <td>&lt; 160</td>
+            <td>Normal pulmonary circulation</td>
+        </tr>
+        <tr>
+            <td><strong>Mild Elevation</strong></td>
+            <td>2.0 - 4.0</td>
+            <td>160 - 320</td>
+            <td>Mild pulmonary hypertension</td>
+        </tr>
+        <tr>
+            <td><strong>Moderate Elevation</strong></td>
+            <td>4.0 - 8.0</td>
+            <td>320 - 640</td>
+            <td>Moderate pulmonary hypertension</td>
+        </tr>
+        <tr>
+            <td><strong>Severe Elevation</strong></td>
+            <td>&gt; 8.0</td>
+            <td>&gt; 640</td>
+            <td>Severe pulmonary hypertension</td>
+        </tr>
+    </table>
+    
+    <div style="margin-top: 15px;">
+        <h4>Clinical Criteria:</h4>
+        <ul>
+            <li><strong>Positive vasoreactivity:</strong> PVR reduction ≥20% and absolute decrease ≥3 Wood units</li>
+            <li><strong>Operability threshold:</strong> PVR &lt; 6 Wood units (for congenital heart disease)</li>
+            <li><strong>Heart transplant consideration:</strong> PVR &gt; 5 Wood units may require assessment</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Clinical Notes -->
+<div class="calculator-section">
+    <h3>Clinical Notes</h3>
+    <ul>
+        <li><strong>Simplified method:</strong> Best correlation when RVOT VTI available and good TR signal</li>
+        <li><strong>Abbas formula:</strong> Validated in patients with pulmonary hypertension, good for severe TR</li>
+        <li><strong>Limitations:</strong> Less accurate with severe TR or poor acoustic windows</li>
+        <li><strong>Best practice:</strong> Use simplified method when RVOT VTI available, Abbas for severe TR</li>
+        <li><strong>Units conversion:</strong> Wood Units × 80 = dyn·s·cm⁻⁵</li>
+        <li><strong>TR measurement:</strong> Use CW Doppler peak velocity, align parallel to flow</li>
+    </ul>
+</div>
+
+<!-- CSS Styles -->
+<style>
+.method-tabs {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.tab {
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    margin-right: 2px;
+}
+
+.tab.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.formula {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-family: monospace;
+    border-left: 3px solid #007bff;
+}
+
+.result {
+    background-color: #e7f3ff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    border-left: 4px solid #007bff;
+}
+
+.result-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.interpretation {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.normal { background-color: #d4edda; color: #155724; }
+.mild { background-color: #fff3cd; color: #856404; }
+.moderate { background-color: #f8d7da; color: #721c24; }
+.severe { background-color: #f5c6cb; color: #721c24; }
+
+.copy-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.copy-btn:hover {
+    background-color: #1e7e34;
+}
+</style>
+
+<!-- JavaScript Functions -->
+<script>
+function switchPVRTab(method) {
+    // Hide all PVR tab contents
+    document.querySelectorAll('#pvr-simplified, #pvr-abbas').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all PVR tabs
+    document.querySelectorAll('.method-tabs .tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById('pvr-' + method).classList.add('active');
+    
+    // Add active class to clicked tab
+    event.target.classList.add('active');
+    
+    // Clear results
+    document.getElementById('pvrResults').innerHTML = '';
+}
+
+function calculatePVRSimplified() {
+    const trVelocity = parseFloat(document.getElementById('pvrTrVelocity').value);
+    const rvotVti = parseFloat(document.getElementById('pvrRvotVti').value);
+    
+    if (!trVelocity || !rvotVti) {
+        alert('Please enter both TR velocity and RVOT VTI');
+        return;
+    }
+    
+    const pvr = (trVelocity * 10) / rvotVti;
+    const pvrDyne = pvr * 80;
+    
+    displayPVRResult(pvr, pvrDyne, 'Simplified Method');
+}
+
+function calculatePVRAbbas() {
+    const trVelocity = parseFloat(document.getElementById('pvrAbbasTR').value);
+    
+    if (!trVelocity) {
+        alert('Please enter TR velocity');
+        return;
+    }
+    
+    const pvr = 0.16 * (trVelocity * trVelocity) + 0.34;
+    const pvrDyne = pvr * 80;
+    
+    displayPVRResult(pvr, pvrDyne, 'Abbas Formula');
+}
+
+function displayPVRResult(pvr, pvrDyne, method) {
+    const interpretation = interpretPVR(pvr);
+    
+    const resultHTML = `
+        <div class="result">
+            <div class="result-value">
+                PVR: ${pvr.toFixed(2)} Wood Units
+                <button class="copy-btn" onclick="copyToClipboard('PVR: ${pvr.toFixed(2)} Wood Units (${pvrDyne.toFixed(0)} dyn·s·cm⁻⁵)')">Copy</button>
+            </div>
+            <div style="margin-top: 5px;">
+                <strong>Alternative units:</strong> ${pvrDyne.toFixed(0)} dyn·s·cm⁻⁵
+            </div>
+            <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                Method: ${method}
+            </div>
+            <div class="interpretation ${interpretation.class}">
+                ${interpretation.text}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('pvrResults').innerHTML = resultHTML;
+}
+
+function interpretPVR(pvr) {
+    if (pvr < 2.0) {
+        return {
+            class: 'normal',
+            text: `Normal PVR (${pvr.toFixed(2)} Wood Units)`
+        };
+    } else if (pvr < 4.0) {
+        return {
+            class: 'mild',
+            text: `Mild elevation (${pvr.toFixed(2)} Wood Units)`
+        };
+    } else if (pvr < 8.0) {
+        return {
+            class: 'moderate',
+            text: `Moderate elevation (${pvr.toFixed(2)} Wood Units)`
+        };
+    } else {
+        return {
+            class: 'severe',
+            text: `Severe elevation (${pvr.toFixed(2)} Wood Units)`
+        };
+    }
+}
+
+// Copy to clipboard function (if you don't already have one)
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // You can add a toast notification here if you have one
+        console.log('Copied to clipboard: ' + text);
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        console.log('Copied to clipboard: ' + text);
+    });
+}
+</script>
