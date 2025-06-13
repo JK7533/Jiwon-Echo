@@ -27,12 +27,10 @@
     label { font-weight: bold; }
     input, select { margin: 0.2em 0.5em 0.7em 0.5em; }
     small { color: #555; }
-    hr { margin: 2em 0 1em 0; }
   </style>
 </head>
 <body>
 
-<h1>Echo Reader Companion (2025)</h1>
 
 <!-- AORTIC ROOT Z-SCORE CALCULATOR -->
 <div class="section">
@@ -69,43 +67,7 @@
   <div class="zscore-result" id="zout"></div>
 </div>
 
-<!-- ASCENDING AORTA Z-SCORE CALCULATOR -->
-<div class="section">
-  <h2>Ascending Aorta Z-Score Calculator <small>(Campens et al., 2014 Table 2)</small></h2>
-  <form id="aaform" onsubmit="event.preventDefault(); calcAAZ();">
-    <label>Age (years):</label>
-    <input type="number" id="aa_age" value="40" min="1" max="120" step="1">
-    &nbsp;&nbsp;
-    <label>Height:</label>
-    <input type="number" id="aa_height" value="66" min="10" max="100" step="0.1">
-    <select id="aa_height_unit">
-      <option value="in">inches</option>
-      <option value="cm">cm</option>
-    </select>
-    &nbsp;&nbsp;
-    <label>Weight:</label>
-    <input type="number" id="aa_weight" value="150" min="10" max="500" step="0.1">
-    <select id="aa_weight_unit">
-      <option value="lb">lbs</option>
-      <option value="kg">kg</option>
-    </select>
-    <br>
-    <label>Gender:</label>
-    <select id="aa_gender">
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-    </select>
-    &nbsp;&nbsp;
-    <label>Ascending Aorta Diameter (cm):</label>
-    <input type="number" id="aa_diam" value="3.0" min="1" max="10" step="0.01">
-    <br>
-    <button type="button" onclick="calcAAZ()">Calculate Z-score</button>
-  </form>
-  <div class="zscore-result" id="aa_zout"></div>
-</div>
-
 <script>
-// Aortic Root Z-Score Calculator (Roman MJ, Devereux RB, et al. Am J Cardiol 2012)
 function calcZ() {
   let height = parseFloat(document.getElementById('height').value);
   let weight = parseFloat(document.getElementById('weight').value);
@@ -130,51 +92,6 @@ function calcZ() {
     `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
     <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
 }
-
-// Ascending Aorta Z-Score Calculator (Campens et al., 2014 Table 2, logarithmic model)
-function calcAAZ() {
-  let height = parseFloat(document.getElementById('aa_height').value);
-  let weight = parseFloat(document.getElementById('aa_weight').value);
-  let diam_cm = parseFloat(document.getElementById('aa_diam').value); // Input in cm
-  let age = parseFloat(document.getElementById('aa_age').value);
-  let sex = document.getElementById('aa_gender').value; // "Male" or "Female"
-
-  // Unit conversions
-  if (document.getElementById('aa_height_unit').value === "in") height = height * 2.54;
-  if (document.getElementById('aa_weight_unit').value === "lb") weight = weight / 2.20462;
-
-  // BSA (Du Bois & Du Bois)
-  let bsa = 0.007184 * Math.pow(height, 0.725) * Math.pow(weight, 0.425);
-
-  // Ascending aorta in mm (for log10 calculation)
-  let aa_mm = diam_cm * 10.0;
-  let log_aa = Math.log10(aa_mm);
-  let log_bsa = Math.log10(bsa);
-
-  // Campens Table 2, main paper: Logarithmic regression
-  let mean_pred_log;
-  if (sex === "Male") {
-    mean_pred_log = 0.504 + 0.361 * log_bsa + 0.014 * age;
-  } else {
-    mean_pred_log = 0.509 + 0.380 * log_bsa + 0.011 * age;
-  }
-  // For display, convert log10(mm) back to mm
-  let mean_pred_mm = Math.pow(10, mean_pred_log);
-
-  // SD (from Table 2)
-  let sd = 0.045;
-  let z = (log_aa - mean_pred_log) / sd;
-
-  // Severity
-  let sev = "Normal";
-  if (z >= 4) sev = "Severely dilated";
-  else if (z >= 3) sev = "Moderately dilated";
-  else if (z >= 2) sev = "Mildly dilated";
-
-  document.getElementById('aa_zout').innerHTML =
-    `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
-    <small>Predicted mean: ${mean_pred_mm.toFixed(1)} mm (${(mean_pred_mm/10).toFixed(2)} cm) | SD: 0.045 (log₁₀ mm) | BSA: ${bsa.toFixed(2)} m²</small>`;
-}
 </script>
 
 <!-- CALCULATOR BUTTONS -->
@@ -188,8 +105,7 @@ function calcAAZ() {
   <hr>
   <small>
     Compiled and maintained by Jiwon Kim, MD.<br>
-    Aortic root Z-score: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.<br>
-    Ascending aorta Z-score: Campens L, Demulier L, De Groote K, et al. Am J Cardiol 2014;114:914–920.<br>
+    Z-score calculator: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.
   </small>
 </footer>
 
