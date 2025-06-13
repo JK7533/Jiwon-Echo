@@ -131,7 +131,7 @@ function calcZ() {
     <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
 }
 
-// Ascending Aorta Z-Score Calculator (Campens et al., 2014) - fixed for age<15 vs >=15 logic
+// Ascending Aorta Z-Score Calculator (Campens et al., 2014; using supplement and webtool equations)
 function calcAAZ() {
   let height = parseFloat(document.getElementById('aa_height').value);
   let weight = parseFloat(document.getElementById('aa_weight').value);
@@ -146,31 +146,19 @@ function calcAAZ() {
   // BSA (DuBois & DuBois)
   let bsa = 0.007184 * Math.pow(height, 0.725) * Math.pow(weight, 0.425);
 
-  // Convert cm to mm
-  let aa_mm = diam_cm * 10.0;
-  let log_aa = Math.log10(aa_mm);
-  let log_bsa = Math.log10(bsa);
-
-  let mean_pred_log;
-  // Campens Table 2: use age term ONLY for <15 years!
-  if (age < 15) {
-    if (sex === "Male") {
-      mean_pred_log = 0.518 + 0.438 * log_bsa + 0.013 * age;
-    } else {
-      mean_pred_log = 0.508 + 0.450 * log_bsa + 0.011 * age;
-    }
+  // Predicted mean (mm) and SD (Campens et al., Table S2, supplement, and webtool)
+  let mean_pred_mm, sd;
+  if (sex === "Male") {
+    mean_pred_mm = 24.2 * Math.pow(bsa, 0.533) * Math.pow(age, 0.371);
   } else {
-    if (sex === "Male") {
-      mean_pred_log = 1.118 + 0.326 * log_bsa;
-    } else {
-      mean_pred_log = 1.089 + 0.357 * log_bsa;
-    }
+    mean_pred_mm = 23.6 * Math.pow(bsa, 0.544) * Math.pow(age, 0.333);
   }
+  sd = 2.72; // standard deviation in mm from supplement Table S2
 
-  // Convert predicted mean from log10(mm) to mm for display
-  let mean_pred_mm = Math.pow(10, mean_pred_log);
+  // Convert cm to mm for input
+  let aa_mm = diam_cm * 10.0;
 
-  let z = (log_aa - mean_pred_log) / 0.045;
+  let z = (aa_mm - mean_pred_mm) / sd;
 
   // Severity
   let sev = "Normal";
@@ -180,7 +168,7 @@ function calcAAZ() {
 
   document.getElementById('aa_zout').innerHTML =
     `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
-    <small>Predicted mean: ${mean_pred_mm.toFixed(1)} mm (${(mean_pred_mm/10).toFixed(2)} cm) | SD: 0.045 (log₁₀ mm) | BSA: ${bsa.toFixed(2)} m²</small>`;
+    <small>Predicted mean: ${mean_pred_mm.toFixed(1)} mm (${(mean_pred_mm/10).toFixed(2)} cm) | SD: 2.72 mm | BSA: ${bsa.toFixed(2)} m²</small>`;
 }
 </script>
 
@@ -196,7 +184,8 @@ function calcAAZ() {
   <small>
     Compiled and maintained by Jiwon Kim, MD.<br>
     Aortic root Z-score: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.<br>
-    Ascending aorta Z-score: Campens L, Demulier L, De Groote K, et al. Am J Cardiol 2014;114:914–920.
+    Ascending aorta Z-score: Campens L, Demulier L, De Groote K, et al. Am J Cardiol 2014;114:914–920.  
+    Formula: mean = 24.2·BSA<sup>0.533</sup>·age<sup>0.371</sup> (male) or 23.6·BSA<sup>0.544</sup>·age<sup>0.333</sup> (female); SD = 2.72 mm
   </small>
 </footer>
 
