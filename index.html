@@ -1,115 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Echo Reader Companion (2025)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 1.5em; max-width: 850px; background: #fafbfc;}
-    h1, h2 { color: #024;}
-    .calculator-links { margin-bottom: 2em; }
-    .calc-btn {
-      display: inline-block;
-      margin: 0.5em 1em 0.5em 0;
-      padding: 0.7em 1.6em;
-      background: #e3ecfa;
-      color: #024;
-      border: 1px solid #b7cbe9;
-      border-radius: 1.5em;
-      font-size: 1.07em;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-    .calc-btn:hover { background: #d4e1f6; }
-    .section { margin-bottom: 2em;}
-    .zscore-result { font-weight: bold; font-size: 1.2em; margin: 1em 0; color: #227;}
-    label { font-weight: bold; }
-    input, select { margin: 0.2em 0.5em 0.7em 0.5em; }
-    small { color: #555; }
-  </style>
-</head>
-<body>
-
-
-<!-- AORTIC ROOT Z-SCORE CALCULATOR -->
+<!-- ASCENDING AORTA Z-SCORE CALCULATOR -->
 <div class="section">
-  <h2>Aortic Root Z-Score Calculator</h2>
-  <form id="zform" onsubmit="event.preventDefault(); calcZ();">
+  <h2>Ascending Aorta Z-Score Calculator (Campens et al., 2014)</h2>
+  <form id="aaform" onsubmit="event.preventDefault(); calcAAZ();">
     <label>Age (years):</label>
-    <input type="number" id="age" value="40" min="1" max="120" step="1">
+    <input type="number" id="aa_age" value="40" min="1" max="120" step="1">
     &nbsp;&nbsp;
     <label>Height:</label>
-    <input type="number" id="height" value="66" min="10" max="100" step="0.1">
-    <select id="height_unit">
+    <input type="number" id="aa_height" value="66" min="10" max="100" step="0.1">
+    <select id="aa_height_unit">
       <option value="in">inches</option>
       <option value="cm">cm</option>
     </select>
     &nbsp;&nbsp;
     <label>Weight:</label>
-    <input type="number" id="weight" value="150" min="10" max="500" step="0.1">
-    <select id="weight_unit">
+    <input type="number" id="aa_weight" value="150" min="10" max="500" step="0.1">
+    <select id="aa_weight_unit">
       <option value="lb">lbs</option>
       <option value="kg">kg</option>
     </select>
     <br>
     <label>Gender:</label>
-    <select id="gender">
+    <select id="aa_gender">
       <option value="Male">Male</option>
       <option value="Female">Female</option>
     </select>
     &nbsp;&nbsp;
-    <label>Aortic Root Diameter (cm):</label>
-    <input type="number" id="diam" value="3.5" min="1" max="10" step="0.01">
+    <label>Ascending Aorta Diameter (cm):</label>
+    <input type="number" id="aa_diam" value="3.0" min="1" max="10" step="0.01">
     <br>
-    <button type="button" onclick="calcZ()">Calculate Z-score</button>
+    <button type="button" onclick="calcAAZ()">Calculate Z-score</button>
   </form>
-  <div class="zscore-result" id="zout"></div>
+  <div class="zscore-result" id="aa_zout"></div>
 </div>
 
 <script>
-function calcZ() {
-  let height = parseFloat(document.getElementById('height').value);
-  let weight = parseFloat(document.getElementById('weight').value);
-  let diam = parseFloat(document.getElementById('diam').value);
-  let age = parseFloat(document.getElementById('age').value);
-  let gender = document.getElementById('gender').value === "Male" ? 1 : 2;
+function calcAAZ() {
+  // Get values
+  let height = parseFloat(document.getElementById('aa_height').value);
+  let weight = parseFloat(document.getElementById('aa_weight').value);
+  let diam_cm = parseFloat(document.getElementById('aa_diam').value);
+  let age = parseFloat(document.getElementById('aa_age').value);
+  let sex = document.getElementById('aa_gender').value; // "Male" or "Female"
 
-  if (document.getElementById('height_unit').value === "in") height = height * 2.54;
-  if (document.getElementById('weight_unit').value === "lb") weight = weight / 2.20462;
+  // Unit conversions
+  if (document.getElementById('aa_height_unit').value === "in") height = height * 2.54;
+  if (document.getElementById('aa_weight_unit').value === "lb") weight = weight / 2.20462;
 
-  let bsa = Math.sqrt(height * weight / 3600);
-  let mean = 2.423 + (0.009 * age) + (0.461 * bsa) - (0.267 * gender);
-  let sd = 0.261;
-  let z = (diam - mean) / sd;
+  // BSA (Dubois & Dubois)
+  let bsa = 0.007184 * Math.pow(height, 0.725) * Math.pow(weight, 0.425);
 
+  // Use Campens 2014 formula, input in mm:
+  let aa_mm = diam_cm * 10.0;
+  let log_aa = Math.log10(aa_mm);
+  let log_bsa = Math.log10(bsa);
+
+  let mean_pred;
+  if (sex === "Male") {
+    mean_pred = 0.518 + 0.438 * log_bsa + 0.013 * age;
+  } else {
+    mean_pred = 0.508 + 0.450 * log_bsa + 0.011 * age;
+  }
+  let z = (log_aa - mean_pred) / 0.045;
+
+  // Severity
   let sev = "Normal";
   if (z >= 4) sev = "Severely dilated";
   else if (z >= 3) sev = "Moderately dilated";
   else if (z >= 2) sev = "Mildly dilated";
 
-  document.getElementById('zout').innerHTML =
+  document.getElementById('aa_zout').innerHTML =
     `Z-score: <span>${z.toFixed(2)}</span> (${sev})<br>
-    <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
+    <small>Campens 2014 | Predicted mean (log10 mm): ${mean_pred.toFixed(3)} | BSA: ${bsa.toFixed(2)} m²</small>`;
 }
 </script>
-
-<!-- CALCULATOR BUTTONS -->
-<div class="calculator-links">
-  <a href="diastolic-function.html" class="calc-btn" target="_blank">Diastolic Function Grading Tool</a>
-  <a href="PISA-calculator.html" class="calc-btn" target="_blank">PISA MR Calculator</a>
-  <a href="PVR-calculator.html" class="calc-btn" target="_blank">PVR Calculator</a>
-</div>
-
-<footer>
-  <hr>
-  <small>
-    Compiled and maintained by Jiwon Kim, MD.<br>
-    Z-score calculator: Roman MJ, Devereux RB, et al. Am J Cardiol 2012;110:1189–1194.
-  </small>
-</footer>
-
-</body>
-</html>
 
 
