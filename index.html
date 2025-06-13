@@ -131,7 +131,7 @@ function calcZ() {
     <small>Predicted mean: ${mean.toFixed(2)} cm | SD: ${sd} cm | BSA: ${bsa.toFixed(2)} m²</small>`;
 }
 
-// Ascending Aorta Z-Score Calculator (Campens et al., 2014) -- input in cm, convert to mm
+// Ascending Aorta Z-Score Calculator (Campens et al., 2014) - fixed for age<15 vs >=15 logic
 function calcAAZ() {
   let height = parseFloat(document.getElementById('aa_height').value);
   let weight = parseFloat(document.getElementById('aa_weight').value);
@@ -146,17 +146,25 @@ function calcAAZ() {
   // BSA (DuBois & DuBois)
   let bsa = 0.007184 * Math.pow(height, 0.725) * Math.pow(weight, 0.425);
 
-  // **Convert cm to mm**
+  // Convert cm to mm
   let aa_mm = diam_cm * 10.0;
   let log_aa = Math.log10(aa_mm);
   let log_bsa = Math.log10(bsa);
 
-  // Predicted mean in log10(mm)
   let mean_pred_log;
-  if (sex === "Male") {
-    mean_pred_log = 0.518 + 0.438 * log_bsa + 0.013 * age;
+  // Campens Table 2: use age term ONLY for <15 years!
+  if (age < 15) {
+    if (sex === "Male") {
+      mean_pred_log = 0.518 + 0.438 * log_bsa + 0.013 * age;
+    } else {
+      mean_pred_log = 0.508 + 0.450 * log_bsa + 0.011 * age;
+    }
   } else {
-    mean_pred_log = 0.508 + 0.450 * log_bsa + 0.011 * age;
+    if (sex === "Male") {
+      mean_pred_log = 1.118 + 0.326 * log_bsa;
+    } else {
+      mean_pred_log = 1.089 + 0.357 * log_bsa;
+    }
   }
 
   // Convert predicted mean from log10(mm) to mm for display
@@ -194,5 +202,4 @@ function calcAAZ() {
 
 </body>
 </html>
-
 
